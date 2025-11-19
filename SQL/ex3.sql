@@ -5,7 +5,7 @@ INSERT INTO Salesperson (
     commission,
     salary
 ) VALUES (
-    12345,
+    '12345',
     'John',
     'Doe',
     0.05,
@@ -14,7 +14,7 @@ INSERT INTO Salesperson (
 
 INSERT INTO Salesperson
 SET
-    SIN = 67890,
+    SIN = '67890',
     fName = 'Jane',
     lName = 'Doe',
     commission = 0.05,
@@ -33,4 +33,4 @@ INSERT INTO Manager (
     salary,
     salary * 0.1
 FROM Salesperson
-WHERE SIN = 12345;
+WHERE SIN = '12345';

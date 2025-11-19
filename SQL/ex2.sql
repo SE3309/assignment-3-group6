@@ -1,5 +1,5 @@
 CREATE TABLE Salesperson (
-    SIN INT PRIMARY KEY,
+    SIN VARCHAR(15) PRIMARY KEY,
     fName VARCHAR(255) NOT NULL,
     lName VARCHAR(255) NOT NULL,
     commission DECIMAL(4, 2) NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE Salesperson (
 );
 
 CREATE TABLE Manager (
-    SIN INT PRIMARY KEY,
+    SIN VARCHAR(15) PRIMARY KEY,
     fName VARCHAR(255) NOT NULL,
     lName VARCHAR(255) NOT NULL,
     salary INT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE Customer (
 );
 
 CREATE TABLE PhoneNumber (
-    phoneNumber INT PRIMARY KEY,
+    phoneNumber VARCHAR(15) PRIMARY KEY,
     driverLicenseNumber VARCHAR(255) NOT NULL REFERENCES Customer(driverLicenseNumber)
 );
 
@@ -58,7 +58,7 @@ CREATE TABLE TestDrive (
     endTime DATETIME NOT NULL,
     testDriveStatus VARCHAR(255) NOT NULL,
     driverLicenseNumber VARCHAR(255) NOT NULL REFERENCES Customer(driverLicenseNumber),
-    SIN INT NOT NULL REFERENCES Salesperson(SIN),
+    SIN VARCHAR(15) NOT NULL REFERENCES Salesperson(SIN),
     VIN VARCHAR(255) NOT NULL REFERENCES Vehicle(VIN)
 );
 
@@ -75,8 +75,8 @@ CREATE TABLE Sale (
     salePrice INT NOT NULL,
     saleDate DATE NOT NULL,
     driverLicenseNumber VARCHAR(255) NOT NULL REFERENCES Customer(driverLicenseNumber),
-    eSIN INT NOT NULL REFERENCES Salesperson(SIN),
-    mSIN INT NOT NULL REFERENCES Manager(SIN),
+    eSIN VARCHAR(15) NOT NULL REFERENCES Salesperson(SIN),
+    mSIN VARCHAR(15) NOT NULL REFERENCES Manager(SIN),
     VIN VARCHAR(255) NOT NULL REFERENCES Vehicle(VIN)
 );
 
