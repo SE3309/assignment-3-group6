@@ -10,7 +10,7 @@ SELECT
 FROM Salesperson
 WHERE salary > (SELECT AVG(salary) FROM Salesperson)
 ORDER BY salary DESC
-LIMIT 10;
+-- LIMIT 10;
 
 -- Query 2: Subquery + EXISTS
 -- Customers with test drives but no purchases
@@ -29,7 +29,7 @@ AND NOT EXISTS (
     FROM Sale s 
     WHERE s.driverLicenseNumber = c.driverLicenseNumber
 )
-LIMIT 10;
+-- LIMIT 10;
 
 -- Query 3: GROUP BY + Aggregation
 -- Vehicle statistics by make
@@ -59,7 +59,7 @@ WHERE commission > (
     WHERE s2.salary BETWEEN s1.salary - 10000 AND s1.salary + 10000
 )
 ORDER BY commission DESC
-LIMIT 10;
+-- LIMIT 10;
 
 -- Query 5: Customer Distribution by Province with Aggregation
 -- Count customers by province and show percentage of total
@@ -95,7 +95,7 @@ JOIN TestDrive td ON c.driverLicenseNumber = td.driverLicenseNumber
 GROUP BY c.driverLicenseNumber
 HAVING COUNT(*) > 1)
 
-LIMIT 15;
+-- LIMIT 15;
 
 -- Query 7: Window Function/GROUP BY alternative
 -- Salesperson rankings
