@@ -34,3 +34,18 @@ WHERE NOT EXISTS (
     FROM Invoice AS i
     WHERE i.saleID = s.saleID
 );
+
+-- Modification 3: Delete old completed test drives with no related sale
+-- Deletes more than one but less than all test drives:
+--  - status = 'Completed'
+--  - older than 1 year
+--  - customer/vehicle pair never resulted in a Sale
+
+DELETE td
+FROM TestDrive AS td
+LEFT JOIN Sale AS s
+    ON s.driverLicenseNumber = td.driverLicenseNumber
+   AND s.VIN = td.VIN
+WHERE td.testDriveStatus = 'Completed'
+  AND td.endTime < DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+  AND s.saleID IS NULL;
