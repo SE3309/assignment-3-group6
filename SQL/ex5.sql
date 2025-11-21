@@ -1,16 +1,15 @@
--- Query 1: Multiple Relations + JOIN
--- Find salespeople and their managers with sales count
+-- Query 1: Salesperson Performance with Subquery
+-- Find salespeople with above-average salaries and their commission rates
 SELECT 
-    s.fName AS salesperson_first,
-    s.lName AS salesperson_last,
-    m.fName AS manager_first, 
-    m.lName AS manager_last,
-    COUNT(sale.saleID) AS total_sales
-FROM Salesperson s
-JOIN Sale sale ON s.SIN = sale.eSIN
-JOIN Manager m ON sale.mSIN = m.SIN
-GROUP BY s.SIN, m.SIN
-HAVING total_sales > 0
+    fName,
+    lName,
+    salary,
+    commission,
+    ROUND((commission * 100), 1) AS commission_percentage,
+    (SELECT AVG(salary) FROM Salesperson) AS company_avg_salary
+FROM Salesperson
+WHERE salary > (SELECT AVG(salary) FROM Salesperson)
+ORDER BY salary DESC
 LIMIT 10;
 
 -- Query 2: Subquery + EXISTS
@@ -62,21 +61,18 @@ WHERE commission > (
 ORDER BY commission DESC
 LIMIT 10;
 
--- Query 5: Multiple JOINs + Date Functions
--- Recent sales with details
+-- Query 5: Customer Distribution by Province with Aggregation
+-- Count customers by province and show percentage of total
 SELECT 
-    c.fName AS customer_first,
-    c.lName AS customer_last,
-    v.make,
-    v.model,
-    s.salePrice,
-    s.saleDate
-FROM Sale s
-JOIN Customer c ON s.driverLicenseNumber = c.driverLicenseNumber
-JOIN Vehicle v ON s.VIN = v.VIN
-WHERE s.saleDate > '2024-01-01'
-ORDER BY s.saleDate DESC
-LIMIT 10;
+    province,
+    COUNT(*) AS customer_count,
+    ROUND((COUNT(*) * 100.0 / (SELECT COUNT(*) FROM Customer)), 1) AS percentage_of_total,
+    SUM(CASE WHEN eFlag = TRUE THEN 1 ELSE 0 END) AS eligible_customers,
+    SUM(CASE WHEN tFlag = TRUE THEN 1 ELSE 0 END) AS test_drive_customers
+FROM Customer
+GROUP BY province
+HAVING customer_count > 10
+ORDER BY customer_count DESC;
 
 -- Query 6: UNION
 -- High-value customers/multiple test drives
