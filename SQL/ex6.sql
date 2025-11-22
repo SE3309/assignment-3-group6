@@ -39,6 +39,7 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM Invoice AS i
     WHERE i.saleID = s.saleID
+    OR i.invoiceNumber = 'INV-' || CAST(s.saleID AS CHAR)
 );
 
 -- Modification 3 (ISO Standard):
