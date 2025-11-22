@@ -1,6 +1,8 @@
 -- Modification 1: Update commission for top-performing salespeople
 -- Increase commission by 0.01 (up to max 0.99) for salespeople whose total sales exceed 100000
 
+SET SQL_SAFE_UPDATES = 0;
+
 UPDATE Salesperson s
 SET commission =
     CASE
