@@ -20,10 +20,21 @@ router.post('/create-customer', async (req, res) => {
     }
 });
 
-// getting top 10 customers with most purchases
-router.get('/customers', async (req, res) => {
+// getting top 3 customers with most purchases
+router.get('/top-3-customers', async (req, res) => {
     try {
-        const [results] = await db.query('SELECT * FROM Customer  LIMIT 10');
+        const [results] = await db.query(`
+            SELECT 
+                c.driverLicenseNumber,
+                c.fName,
+                c.lName,
+                COUNT(s.saleID) as purchaseCount
+            FROM Customer c
+            LEFT JOIN Sale s ON c.driverLicenseNumber = s.driverLicenseNumber
+            GROUP BY c.driverLicenseNumber, c.fName, c.lName, c.postalCode
+            ORDER BY purchaseCount DESC
+            LIMIT 3
+        `);
         res.status(200).json(results);
     } catch (error) {
         res.status(500).json({ error: error.message });
