@@ -119,6 +119,7 @@ BEGIN
         SELECT 1
         FROM TestDrive t
         WHERE t.VIN = NEW.VIN
+          AND t.testDriveStatus <> 'Cancelled'
           AND (
                 (NEW.startTime < t.endTime)
                 AND (NEW.endTime > t.startTime)
