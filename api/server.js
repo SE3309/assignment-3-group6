@@ -12,21 +12,21 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 const db = require('./config/database');
 
+// import routes
+const robert = require('./routes/robert');
+const shiven = require('./routes/shiven');
+const freda = require('./routes/freda');
+const caroline = require('./routes/caroline');
+const arjun = require('./routes/arjun');
 
-
-
-// routes
-
-
-
-
-// WRITE ROUTES HERE
-
-
-
+// call routes
+app.use('/api', robert);
+app.use('/api', shiven);
+app.use('/api', freda);
+app.use('/api', caroline);
+app.use('/api', arjun);
 
 // health check
 app.get('/api/health', (req, res) => {
