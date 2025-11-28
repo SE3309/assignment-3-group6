@@ -1,4 +1,3 @@
-// client/src/components/PaymentSchedule.js
 import React, { useState } from 'react';
 
 function PaymentSchedule() {

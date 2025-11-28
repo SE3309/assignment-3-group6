@@ -1,4 +1,3 @@
-// client/src/App.js
 import './App.css';
 import ArchiveTestDrives from './components/ArchiveTestDrives';
 import PaymentSchedule from './components/PaymentSchedule';
