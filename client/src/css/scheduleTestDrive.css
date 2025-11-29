@@ -257,6 +257,11 @@ th {
   box-shadow: 0 8px 16px rgba(14, 165, 233, 0.15);
 }
 
+.ghost.inline {
+  padding: 0.25rem 0.5rem;
+  margin-left: 0.5rem;
+}
+
 .pill-scheduled {
   background: rgba(14, 165, 233, 0.15);
   color: var(--accent-strong);

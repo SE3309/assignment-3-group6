@@ -64,7 +64,7 @@ router.get('/shiven/search/salespeople', async (req, res) => {
         const pageSize = 15;
         const offset = (page - 1) * pageSize;
         const [rows] = await db.query(
-            `SELECT SIN, fName, lName
+            `SELECT SIN, fName, lName, salary, commission
              FROM Salesperson
              WHERE SIN LIKE ?
                 OR fName LIKE ?
@@ -205,6 +205,113 @@ router.post('/shiven/test-drives', async (req, res) => {
             testDriveID: nextId,
             upcoming
         });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Promote a salesperson to manager and optionally update salary
+router.post('/shiven/promote-salesperson', async (req, res) => {
+    const connection = await db.getConnection();
+    try {
+        const { SIN, bonus, newSalary } = req.body;
+
+        if (!SIN || bonus === undefined || bonus === null) {
+            connection.release();
+            return res.status(400).json({ error: 'SIN and bonus are required' });
+        }
+
+        await connection.beginTransaction();
+
+        const [[salesperson]] = await connection.query(
+            `SELECT SIN, fName, lName, salary, commission FROM Salesperson WHERE SIN = ?`,
+            [SIN]
+        );
+
+        if (!salesperson) {
+            await connection.rollback();
+            connection.release();
+            return res.status(404).json({ error: 'Salesperson not found' });
+        }
+
+        const suggestedManagerSalary = newSalary || (salesperson.salary + salesperson.salary * (salesperson.commission || 0));
+
+        // Optional salary update on salesperson
+        if (newSalary) {
+            await connection.query(
+                `UPDATE Salesperson SET salary = ? WHERE SIN = ?`,
+                [newSalary, SIN]
+            );
+        }
+
+        const [insertResult] = await connection.query(
+            `INSERT INTO Manager (SIN, fName, lName, salary, bonus)
+             SELECT s.SIN, s.fName, s.lName, COALESCE(?, s.salary), ?
+             FROM Salesperson s
+             WHERE s.SIN = ?
+               AND NOT EXISTS (SELECT 1 FROM Manager m WHERE m.SIN = s.SIN)`,
+            [suggestedManagerSalary, bonus, SIN]
+        );
+
+        if (insertResult.affectedRows === 0) {
+            await connection.rollback();
+            connection.release();
+            return res.status(409).json({ error: 'Salesperson not found or already a manager' });
+        }
+
+        // Zero out salesperson pay/commission to reflect exclusive manager role
+        await connection.query(
+            `UPDATE Salesperson SET commission = 0, salary = 0 WHERE SIN = ?`,
+            [SIN]
+        );
+
+        await connection.commit();
+        connection.release();
+        res.status(201).json({
+            message: 'Salesperson promoted to manager',
+            SIN,
+            managerSalary: suggestedManagerSalary
+        });
+    } catch (error) {
+        await connection.rollback();
+        connection.release();
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Employee roles overview: salesperson vs manager
+router.get('/shiven/roles-overview', async (_req, res) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT 
+                s.SIN,
+                s.fName,
+                s.lName,
+                s.salary AS salespersonSalary,
+                m.salary AS managerSalary,
+                m.bonus,
+                (s.salary + s.salary * COALESCE(s.commission, 0)) AS suggestedManagerSalary,
+                CASE WHEN m.SIN IS NOT NULL THEN 'Manager' ELSE 'Salesperson' END AS role
+             FROM Salesperson s
+             LEFT JOIN Manager m ON m.SIN = s.SIN
+             
+             UNION
+             
+             SELECT 
+                m.SIN,
+                m.fName,
+                m.lName,
+                NULL AS salespersonSalary,
+                m.salary AS managerSalary,
+                m.bonus,
+                m.salary AS suggestedManagerSalary,
+                'Manager' AS role
+             FROM Manager m
+             WHERE NOT EXISTS (SELECT 1 FROM Salesperson s WHERE s.SIN = m.SIN)
+             
+             ORDER BY lName, fName`
+        );
+        res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

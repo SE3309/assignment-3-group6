@@ -1,5 +1,6 @@
 import './App.css';
 import ScheduleTestDrive from './components/ScheduleTestDrive';
+import PromoteSalesperson from './components/PromoteSalesperson';
 
 function App() {
     return (
@@ -12,6 +13,12 @@ function App() {
                 </p>
             </header>
             <ScheduleTestDrive />
+            <header className="app-header">
+                <p className="eyebrow">Admin • Promotion</p>
+                <h1>Promote a Salesperson to Manager</h1>
+                <p className="lede">Insert into Manager and optionally update salary, plus see role coverage.</p>
+            </header>
+            <PromoteSalesperson />
         </div>
     );
 }
