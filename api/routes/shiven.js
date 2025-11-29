@@ -360,6 +360,126 @@ router.get('/shiven/sales-leaderboard', async (req, res) => {
     }
 });
 
+// High-value customers report (spend and recent test drives without purchases)
+router.get('/shiven/high-value-customers', async (req, res) => {
+    try {
+        const { minSpend, tdStartDate, tdEndDate, minTestDrives } = req.query;
+        const spendThreshold = Number(minSpend) || 20000;
+        const minDrives = Number(minTestDrives) || 0;
+
+        const startDate = tdStartDate || null;
+        const endDate = tdEndDate || null;
+        const dateStart = startDate || new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const dateEnd = endDate || new Date().toISOString().slice(0, 10);
+
+        const [rows] = await db.query(
+            `
+            SELECT 
+                c.driverLicenseNumber,
+                c.fName,
+                c.lName,
+                c.province,
+                spend.totalSpent,
+                spend.totalSales,
+                td.recentTestDrives,
+                ph.phoneNumber,
+                lt.lastTestDriveAt,
+                lt.lastVIN,
+                ls.fName AS lastSalespersonFirstName,
+                ls.lName AS lastSalespersonLastName,
+                lv.make AS lastVehicleMake,
+                lv.model AS lastVehicleModel,
+                lv.trim AS lastVehicleTrim,
+                lv.inventoryStatus AS lastVehicleStatus,
+                'High Spender' AS segment
+            FROM Customer c
+            JOIN (
+                SELECT s.driverLicenseNumber, SUM(s.salePrice) AS totalSpent, COUNT(*) AS totalSales
+                FROM Sale s
+                GROUP BY s.driverLicenseNumber
+                HAVING SUM(s.salePrice) > ?
+            ) spend ON spend.driverLicenseNumber = c.driverLicenseNumber
+            LEFT JOIN (
+                SELECT driverLicenseNumber, COUNT(*) AS recentTestDrives
+                FROM TestDrive
+                WHERE DATE(startTime) BETWEEN ? AND ?
+                GROUP BY driverLicenseNumber
+            ) td ON td.driverLicenseNumber = c.driverLicenseNumber
+            LEFT JOIN (
+                SELECT driverLicenseNumber, MIN(phoneNumber) AS phoneNumber
+                FROM PhoneNumber
+                GROUP BY driverLicenseNumber
+            ) ph ON ph.driverLicenseNumber = c.driverLicenseNumber
+            LEFT JOIN (
+                SELECT driverLicenseNumber, startTime AS lastTestDriveAt, VIN AS lastVIN, SIN AS lastSIN, 
+                       ROW_NUMBER() OVER (PARTITION BY driverLicenseNumber ORDER BY startTime DESC) AS rn
+                FROM TestDrive
+            ) lt ON lt.driverLicenseNumber = c.driverLicenseNumber AND lt.rn = 1
+            LEFT JOIN Salesperson ls ON ls.SIN = lt.lastSIN
+            LEFT JOIN Vehicle lv ON lv.VIN = lt.lastVIN
+            HAVING COALESCE(td.recentTestDrives, 0) >= ?
+            
+            UNION
+            
+            SELECT 
+                c.driverLicenseNumber,
+                c.fName,
+                c.lName,
+                c.province,
+                spend.totalSpent,
+                spend.totalSales,
+                td.recentTestDrives,
+                ph.phoneNumber,
+                lt.lastTestDriveAt,
+                lt.lastVIN,
+                ls.fName AS lastSalespersonFirstName,
+                ls.lName AS lastSalespersonLastName,
+                lv.make AS lastVehicleMake,
+                lv.model AS lastVehicleModel,
+                lv.trim AS lastVehicleTrim,
+                lv.inventoryStatus AS lastVehicleStatus,
+                'Engaged Tester' AS segment
+            FROM Customer c
+            JOIN (
+                SELECT s.driverLicenseNumber, SUM(s.salePrice) AS totalSpent, COUNT(*) AS totalSales
+                FROM Sale s
+                GROUP BY s.driverLicenseNumber
+            ) spend ON spend.driverLicenseNumber = c.driverLicenseNumber
+            JOIN (
+                SELECT td.driverLicenseNumber, COUNT(*) AS recentTestDrives
+                FROM TestDrive td
+                WHERE DATE(td.startTime) BETWEEN ? AND ?
+                GROUP BY td.driverLicenseNumber
+            ) td ON td.driverLicenseNumber = c.driverLicenseNumber
+            LEFT JOIN (
+                SELECT driverLicenseNumber, MIN(phoneNumber) AS phoneNumber
+                FROM PhoneNumber
+                GROUP BY driverLicenseNumber
+            ) ph ON ph.driverLicenseNumber = c.driverLicenseNumber
+            LEFT JOIN (
+                SELECT driverLicenseNumber, startTime AS lastTestDriveAt, VIN AS lastVIN, SIN AS lastSIN, 
+                       ROW_NUMBER() OVER (PARTITION BY driverLicenseNumber ORDER BY startTime DESC) AS rn
+                FROM TestDrive
+            ) lt ON lt.driverLicenseNumber = c.driverLicenseNumber AND lt.rn = 1
+            LEFT JOIN Salesperson ls ON ls.SIN = lt.lastSIN
+            LEFT JOIN Vehicle lv ON lv.VIN = lt.lastVIN
+            WHERE NOT EXISTS (
+                SELECT 1 FROM Sale s2 WHERE s2.driverLicenseNumber = c.driverLicenseNumber
+                  AND DATE(s2.saleDate) BETWEEN ? AND ?
+            )
+            HAVING COALESCE(td.recentTestDrives, 0) >= ?
+            
+            ORDER BY segment DESC, totalSpent DESC, COALESCE(recentTestDrives, 0) DESC
+            `,
+            [spendThreshold, dateStart, dateEnd, minDrives, dateStart, dateEnd, dateStart, dateEnd, minDrives]
+        );
+
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // update status (and optionally times) for an existing test drive
 router.patch('/shiven/test-drives/:id', async (req, res) => {
     try {
