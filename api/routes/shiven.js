@@ -317,6 +317,49 @@ router.get('/shiven/roles-overview', async (_req, res) => {
     }
 });
 
+// Salesperson performance leaderboard with optional date/min sales filters
+router.get('/shiven/sales-leaderboard', async (req, res) => {
+    try {
+        const { startDate, endDate, minSales } = req.query;
+
+        const params = [];
+        let dateFilter = '';
+
+        if (startDate) {
+            dateFilter += ' AND s.saleDate >= ?';
+            params.push(startDate);
+        }
+        if (endDate) {
+            dateFilter += ' AND s.saleDate <= ?';
+            params.push(endDate);
+        }
+
+        const minSalesFilter = Number(minSales) || 0;
+
+        const [rows] = await db.query(
+            `SELECT 
+                sp.SIN,
+                sp.fName,
+                sp.lName,
+                COALESCE(SUM(s.salePrice), 0) AS totalRevenue,
+                COUNT(s.saleID) AS vehiclesSold,
+                AVG(s.salePrice) AS avgSalePrice,
+                RANK() OVER (ORDER BY COALESCE(SUM(s.salePrice), 0) DESC) AS rankPosition
+            FROM Salesperson sp
+            LEFT JOIN Sale s ON s.eSIN = sp.SIN
+                ${dateFilter}
+            GROUP BY sp.SIN, sp.fName, sp.lName
+            HAVING COUNT(s.saleID) >= ?
+            ORDER BY totalRevenue DESC, vehiclesSold DESC`,
+            [...params, minSalesFilter]
+        );
+
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // update status (and optionally times) for an existing test drive
 router.patch('/shiven/test-drives/:id', async (req, res) => {
     try {

@@ -1,6 +1,7 @@
 import './App.css';
 import ScheduleTestDrive from './components/ScheduleTestDrive';
 import PromoteSalesperson from './components/PromoteSalesperson';
+import SalesLeaderboard from './components/SalesLeaderboard';
 
 function App() {
     return (
@@ -19,6 +20,12 @@ function App() {
                 <p className="lede">Insert into Manager and optionally update salary, plus see role coverage.</p>
             </header>
             <PromoteSalesperson />
+            <header className="app-header">
+                <p className="eyebrow">Performance</p>
+                <h1>Salesperson Performance Leaderboard</h1>
+                <p className="lede">Rank revenue, volume, and average sale price for a date range.</p>
+            </header>
+            <SalesLeaderboard />
         </div>
     );
 }
