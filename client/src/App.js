@@ -3,6 +3,10 @@ import ScheduleTestDrive from './components/ScheduleTestDrive';
 import PromoteSalesperson from './components/PromoteSalesperson';
 import SalesLeaderboard from './components/SalesLeaderboard';
 import HighValueCustomers from './components/HighValueCustomers';
+import ArchiveTestDrives from './components/ArchiveTestDrives';
+import PaymentSchedule from './components/PaymentSchedule';
+import UnconvertedTestDrives from './components/UnconvertedTestDrives';
+import InventoryAnalytics from './components/InventoryAnalytics';
 
 function App() {
     return (
@@ -33,8 +37,38 @@ function App() {
                 <p className="lede">Surface priority segments across lifetime spend and recent test drives.</p>
             </header>
             <HighValueCustomers />
+            <header className="app-header">
+                <p className="eyebrow">Test Drives</p>
+                <h1>Archive Test Drives</h1>
+                <p className="lede">Manage and view archived test drive records.</p>
+            </header>
+            <ArchiveTestDrives />
+            <header className="app-header">
+                <p className="eyebrow">Finance</p>
+                <h1>Payment Schedule</h1>
+                <p className="lede">View and manage payment schedules.</p>
+            </header>
+            <PaymentSchedule />
+            <header className="app-header">
+                <p className="eyebrow">Sales • Warm Leads</p>
+                <h1>Find Unconverted Test Drives (Warm Leads)</h1>
+                <p className="lede">
+                    Find customers who completed test drives but haven't made a purchase for any vehicle after test-drives, allowing for follow-up campaigns.
+                </p>
+            </header>
+            <UnconvertedTestDrives />
+            <header className="app-header">
+                <p className="eyebrow">Inventory • Analytics</p>
+                <h1>Inventory & Pricing Analytics by Make/Model</h1>
+                <p className="lede">
+                    Analyze available inventory with pricing and mileage statistics grouped by vehicle make and model.
+                </p>
+            </header>
+            <InventoryAnalytics />
         </div>
     );
+  }
+
 import ArchiveTestDrives from './components/ArchiveTestDrives';
 import PaymentSchedule from './components/PaymentSchedule';
 
