@@ -1,16 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 .App {
   min-height: 100vh;
+  padding: 3rem 1.5rem 4rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  gap: 2rem;
 }
 
-.App h1 {
-  font-size: 4rem;
-  color: #333;
-  margin-bottom: 1rem;
+.app-header {
+  width: min(900px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.app-header h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.app-header .lede {
+  color: #4b5563;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 0;
 }
 
 body {
