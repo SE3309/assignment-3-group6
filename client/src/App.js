@@ -72,6 +72,9 @@ function App() {
 import ArchiveTestDrives from './components/ArchiveTestDrives';
 import PaymentSchedule from './components/PaymentSchedule';
 
+import InvoiceManager from './components/InvoiceManager';
+import CommissionAdjust from './components/CommissionAdjust';
+
 function App() {
   return (
     <div className="app-root">
@@ -86,6 +89,14 @@ function App() {
 
         <section className="card">
           <PaymentSchedule />
+        </section>
+
+        <section className="card">
+          <InvoiceManager />
+        </section>
+
+        <section className="card">
+          <CommissionAdjust />
         </section>
       </main>
     </div>
